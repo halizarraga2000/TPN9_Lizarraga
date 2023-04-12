@@ -54,28 +54,42 @@
 #include "FreeRTOS.h"
 #include "bsp.h"
 #include "task.h"
+#include "semphr.h"
 #include <stdbool.h>
 
 /* === Definicion y Macros ================================================= */
 
 /* === Declaraciones de tipos de datos internos ============================ */
+typedef struct parametros_s {
+    digital_output_t led;
+    uint16_t delay;
+} * parametros_t;
 
 /* === Declaraciones de funciones internas ================================= */
 
 /* === Definiciones de variables internas ================================== */
+//static board_t board;
 
-static board_t board;
+static SemaphoreHandle_t mutex;
 
 /* === Definiciones de variables externas ================================== */
 
 /* === Definiciones de funciones internas ================================== */
-
 void Blinking(void * parameters) {
+    parametros_t parametros = (parametros_t)parameters;
+
     while (true) {
-        DigitalOutputToggle(board->led_azul);
-        vTaskDelay(pdMS_TO_TICKS(500));
+        xSemaphoreTake(mutex, portMAX_DELAY);
+
     }
 }
+
+//void Blinking(void * parameters) {
+//    while (true) {
+//        DigitalOutputToggle(board->led_azul);
+//        vTaskDelay(pdMS_TO_TICKS(500));
+//    }
+//}
 
 /* === Definiciones de funciones externas ================================== */
 
@@ -88,16 +102,28 @@ void Blinking(void * parameters) {
  */
 int main(void) {
     /* Inicializaciones y configuraciones de dispositivos */
+    static board_t board;
+    static struct parametros_s parametros[2];
+
     board = BoardCreate();
+    mutex = xSemaphoreCreateMutex();
+
+    parametros[0].led = board->led_rojo;  //rgb_
+    parametros[0].delay = 500;  //500 mseg
+
+    parametros[1].led = board->led_azul;  //led_rgb_azul
+    parametros[1].delay = 500;  //500 mseg
 
     /* Creación de las tareas */
-    xTaskCreate(Blinking, "Baliza", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(Blinking, "Rojo", configMINIMAL_STACK_SIZE, &parametros[0], tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(Blinking, "Azul", configMINIMAL_STACK_SIZE, &parametros[1], tskIDLE_PRIORITY + 1, NULL);
 
     /* Arranque del sistema operativo */
     vTaskStartScheduler();
 
     /* vTaskStartScheduler solo retorna si se detiene el sistema operativo */
     while (1) {
+    
     };
 
     /* El valor de retorno es solo para evitar errores en el compilador*/
