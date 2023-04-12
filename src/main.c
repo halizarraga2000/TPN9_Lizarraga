@@ -68,7 +68,7 @@ typedef struct parametros_s {
 /* === Declaraciones de funciones internas ================================= */
 
 /* === Definiciones de variables internas ================================== */
-//static board_t board;
+//static board_t board;  //Ojo No se usa!!
 
 static SemaphoreHandle_t mutex;
 
