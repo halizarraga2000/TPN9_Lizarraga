@@ -81,6 +81,16 @@ void Blinking(void * parameters) {
     while (true) {
         xSemaphoreTake(mutex, portMAX_DELAY);
 
+        DigitalOutputActivate(parametros->led);
+
+        vTaskDelay(pdMS_TO_TICKS(parametros->delay));
+
+        DigitalOutputDeactivate(parametros->led);
+
+        xSemaphoreGive(mutex);
+
+        vTaskDelay(pdMS_TO_TICKS(parametros->delay));
+
     }
 }
 
@@ -108,10 +118,11 @@ int main(void) {
     board = BoardCreate();
     mutex = xSemaphoreCreateMutex();
 
-    parametros[0].led = board->led_rojo;  //rgb_
+    //Parametros !!!!
+    parametros[0].led = board->led_rojo;  //
     parametros[0].delay = 500;  //500 mseg
 
-    parametros[1].led = board->led_azul;  //led_rgb_azul
+    parametros[1].led = board->led_azul;  //
     parametros[1].delay = 500;  //500 mseg
 
     /* Creación de las tareas */
